@@ -29,24 +29,10 @@ export function useTransactions(
           acc[key] = value;
         }
         return acc;
-      }, {} as Record<string, any>);
+      }, {} as Record<string, string | number | string[] | undefined>);
     
     return ['transactions', sortedFilters];
-  }, [
-    filters.page,
-    filters.limit,
-    filters.sort,
-    filters.q,
-    JSON.stringify(filters.customer_region),
-    JSON.stringify(filters.gender),
-    JSON.stringify(filters.product_category),
-    JSON.stringify(filters.tags),
-    JSON.stringify(filters.payment_method),
-    filters.age_min,
-    filters.age_max,
-    filters.date_from,
-    filters.date_to,
-  ]);
+  }, [filters]);
 
   return useQuery<TransactionListResponse, Error>({
     queryKey: stableQueryKey,

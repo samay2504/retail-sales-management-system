@@ -32,7 +32,7 @@ function TransactionsPage() {
 
   // Create stable filter key for comparison (prevents unnecessary page resets)
   const filtersKey = useMemo(() => {
-    const { page, limit, sort, ...filterValues } = filters;
+    const { page: _page, limit: _limit, sort: _sort, ...filterValues } = filters;
     return JSON.stringify(filterValues);
   }, [filters]);
 
@@ -74,8 +74,8 @@ function TransactionsPage() {
   const handleFiltersChange = useCallback((newFilters: TransactionFilters) => {
     setFilters((prev) => {
       // Only reset page if actual filter values changed (not page/limit/sort)
-      const { page: prevPage, limit: prevLimit, sort: prevSort, ...prevFilterValues } = prev;
-      const { page: newPage, limit: newLimit, sort: newSort, ...newFilterValues } = newFilters;
+      const { page: _prevPage, limit: _prevLimit, sort: _prevSort, ...prevFilterValues } = prev;
+      const { page: _newPage, limit: _newLimit, sort: _newSort, ...newFilterValues } = newFilters;
       
       const filtersChanged = JSON.stringify(prevFilterValues) !== JSON.stringify(newFilterValues);
       
@@ -120,7 +120,7 @@ function TransactionsPage() {
       if (value && Array.isArray(newFilters[field])) {
         // Remove specific value from array
         const arr = newFilters[field] as string[];
-        newFilters[field] = arr.filter((v) => v !== value) as any;
+        newFilters[field] = arr.filter((v) => v !== value) as string[];
         if ((newFilters[field] as string[]).length === 0) {
           delete newFilters[field];
         }

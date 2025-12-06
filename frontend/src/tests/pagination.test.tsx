@@ -108,7 +108,7 @@ describe('Pagination Race Condition Prevention', () => {
 
   it('should cancel previous request when page changes', async () => {
     // Track abort controllers
-    const controllers: any[] = [];
+    const controllers: AbortController[] = [];
 
     vi.mocked(apiClient.listTransactions).mockImplementation(async (filters, signal) => {
       // Store the signal for testing
