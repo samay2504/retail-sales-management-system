@@ -8,7 +8,6 @@ from fastapi import Request, Response, HTTPException
 from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.types import ASGIApp
 
-from src.config import settings
 from src.utils.logging import get_logger
 
 logger = get_logger(__name__)

@@ -1,6 +1,5 @@
 """Tests for pagination stability and deterministic ordering."""
 import pytest
-from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.models.transaction import Transaction

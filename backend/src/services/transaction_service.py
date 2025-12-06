@@ -1,5 +1,5 @@
 """Transaction service for business logic."""
-from typing import Dict, List, Any
+from typing import Dict, Any
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 

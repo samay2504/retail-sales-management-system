@@ -8,7 +8,6 @@ from src.schemas.transaction import (
     TransactionResponse,
     TransactionListQuery,
     TransactionListResponse,
-    FilterMetaResponse,
 )
 from src.services.transaction_service import TransactionService
 from src.utils.logging import get_logger

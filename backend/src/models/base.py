@@ -1,7 +1,7 @@
 """SQLAlchemy base models and database setup."""
 from datetime import datetime
 from typing import Any
-from sqlalchemy import Column, DateTime, Integer
+from sqlalchemy import Column, DateTime
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine, async_sessionmaker
 from sqlalchemy.orm import DeclarativeBase, declared_attr
 
