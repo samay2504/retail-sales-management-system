@@ -1,0 +1,81 @@
+/* postcss-comment */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply bg-slate-950 text-gray-100 antialiased;
+  }
+}
+
+@layer components {
+  .glass-card {
+    @apply bg-white/5 backdrop-blur-md border border-white/10 rounded-2xl shadow-glass;
+  }
+  
+  .btn-primary {
+    @apply px-6 py-3 bg-gradient-cta text-white font-semibold rounded-full 
+           hover:shadow-glow-cyan transition-all duration-300 
+           focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 
+           focus:ring-offset-slate-950;
+  }
+  
+  .btn-secondary {
+    @apply px-6 py-3 bg-white/10 text-white font-semibold rounded-full 
+           border border-white/20 hover:bg-white/20 transition-all duration-300
+           focus:outline-none focus:ring-2 focus:ring-white/50 focus:ring-offset-2 
+           focus:ring-offset-slate-950;
+  }
+  
+  .input-field {
+    @apply w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl
+           text-gray-100 placeholder-gray-400
+           focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent
+           transition-all duration-200;
+  }
+  
+  .badge {
+    @apply inline-flex items-center px-3 py-1 rounded-full text-xs font-medium;
+  }
+  
+  .badge-primary {
+    @apply badge bg-primary/20 text-primary border border-primary/30;
+  }
+  
+  .badge-purple {
+    @apply badge bg-purple/20 text-purple border border-purple/30;
+  }
+  
+  .badge-cyan {
+    @apply badge bg-cyan/20 text-cyan border border-cyan/30;
+  }
+}
+
+/* Loading animations */
+@keyframes shimmer {
+  0% {
+    background-position: -1000px 0;
+  }
+  100% {
+    background-position: 1000px 0;
+  }
+}
+
+.skeleton {
+  @apply bg-gradient-to-r from-white/5 via-white/10 to-white/5 bg-[length:1000px_100%];
+  animation: shimmer 2s infinite linear;
+}
+
+/* Scrollbar styling */
+::-webkit-scrollbar {
+  @apply w-2;
+}
+
+::-webkit-scrollbar-track {
+  @apply bg-slate-900;
+}
+
+::-webkit-scrollbar-thumb {
+  @apply bg-white/20 rounded-full hover:bg-white/30;
+}

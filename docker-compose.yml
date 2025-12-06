@@ -1,0 +1,66 @@
+version: '3.8'
+
+services:
+  # Backend service
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: truestate-backend
+    ports:
+      - "8000:8000"
+    environment:
+      - APP_ENV=development
+      - DEBUG=true
+      - DATABASE_URL=sqlite+aiosqlite:///./data/truestate.db
+      - CACHE_BACKEND=redis
+      - REDIS_URL=redis://redis:6379/0
+      - CORS_ORIGINS=http://localhost:5173,http://localhost:4173,http://127.0.0.1:5173
+    volumes:
+      - ./backend:/app
+      - backend-data:/app/data
+    depends_on:
+      - redis
+    networks:
+      - truestate-network
+    restart: unless-stopped
+    command: uvicorn src.index:app --host 0.0.0.0 --port 8000 --reload
+
+  # Redis cache (optional)
+  redis:
+    image: redis:7-alpine
+    container_name: truestate-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    networks:
+      - truestate-network
+    restart: unless-stopped
+
+  # PostgreSQL (optional - for production)
+  postgres:
+    image: postgres:16-alpine
+    container_name: truestate-postgres
+    environment:
+      - POSTGRES_DB=truestate
+      - POSTGRES_USER=truestate
+      - POSTGRES_PASSWORD=truestate_password
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    networks:
+      - truestate-network
+    restart: unless-stopped
+    profiles:
+      - postgres
+
+volumes:
+  backend-data:
+  redis-data:
+  postgres-data:
+
+networks:
+  truestate-network:
+    driver: bridge
