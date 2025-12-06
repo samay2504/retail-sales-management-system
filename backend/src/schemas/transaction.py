@@ -8,20 +8,28 @@ from pydantic import BaseModel, Field, field_validator
 class TransactionBase(BaseModel):
     """Base transaction schema."""
 
+    transaction_id: int = Field(..., description="Transaction ID from source system")
+    customer_id: str = Field(..., min_length=1, max_length=50)
     customer_name: str = Field(..., min_length=1, max_length=255)
     phone_number: str = Field(..., min_length=1, max_length=20)
-    customer_region: str = Field(..., min_length=1, max_length=100)
     gender: str = Field(..., min_length=1, max_length=20)
     age: int = Field(..., ge=0, le=150)
+    customer_region: str = Field(..., min_length=1, max_length=100)
+    customer_type: str = Field(..., min_length=1, max_length=50)
     date: str = Field(..., min_length=1)
     quantity: int = Field(..., ge=1)
     price_per_unit: float = Field(..., ge=0)
     discount_percentage: float = Field(default=0.0, ge=0, le=100)
     total_amount: float = Field(..., ge=0)
     final_amount: float = Field(..., ge=0)
+    product_id: str = Field(..., min_length=1, max_length=50)
+    product_name: str = Field(..., min_length=1, max_length=255)
+    brand: str = Field(..., min_length=1, max_length=100)
     product_category: str = Field(..., min_length=1, max_length=100)
     tags: Optional[str] = None
     payment_method: str = Field(..., min_length=1, max_length=50)
+    order_status: str = Field(..., min_length=1, max_length=50)
+    delivery_type: str = Field(..., min_length=1, max_length=50)
     store_id: str = Field(..., min_length=1, max_length=50)
     store_location: str = Field(..., min_length=1, max_length=255)
     salesperson_id: str = Field(..., min_length=1, max_length=50)
@@ -48,7 +56,7 @@ class TransactionListQuery(BaseModel):
     """Schema for transaction list query parameters."""
 
     # Search
-    q: Optional[str] = Field(None, description="Search query for customer name or phone")
+    q: Optional[str] = Field(None, description="Search query for customer name, phone, or product")
 
     # Pagination
     page: int = Field(default=1, ge=1, description="Page number (1-indexed)")
@@ -62,11 +70,21 @@ class TransactionListQuery(BaseModel):
 
     # Filters - Multi-select
     customer_region: Optional[List[str]] = Field(default=None, description="Filter by regions")
+    customer_type: Optional[List[str]] = Field(
+        default=None, description="Filter by customer type (New, Returning, Loyal)"
+    )
     gender: Optional[List[str]] = Field(default=None, description="Filter by gender")
     product_category: Optional[List[str]] = Field(default=None, description="Filter by category")
+    brand: Optional[List[str]] = Field(default=None, description="Filter by brand")
     tags: Optional[List[str]] = Field(default=None, description="Filter by tags")
     payment_method: Optional[List[str]] = Field(
         default=None, description="Filter by payment method"
+    )
+    order_status: Optional[List[str]] = Field(
+        default=None, description="Filter by order status (Completed, Pending, Cancelled, Returned)"
+    )
+    delivery_type: Optional[List[str]] = Field(
+        default=None, description="Filter by delivery type (Standard, Express, Store Pickup)"
     )
 
     # Filters - Range

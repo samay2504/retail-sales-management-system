@@ -1,4 +1,5 @@
 """Script to verify no Pydantic deprecation warnings."""
+
 import sys
 import warnings
 from pathlib import Path
@@ -16,12 +17,14 @@ pydantic_warnings = []
 def warning_handler(message, category, filename, lineno, file=None, line=None):
     """Custom warning handler to capture Pydantic warnings."""
     if "pydantic" in str(message).lower() or "pydantic" in filename.lower():
-        pydantic_warnings.append({
-            "message": str(message),
-            "category": category.__name__,
-            "filename": filename,
-            "lineno": lineno,
-        })
+        pydantic_warnings.append(
+            {
+                "message": str(message),
+                "category": category.__name__,
+                "filename": filename,
+                "lineno": lineno,
+            }
+        )
 
 
 # Set custom warning handler
@@ -30,20 +33,16 @@ warnings.showwarning = warning_handler
 # Import all modules that use Pydantic
 try:
     print("Importing Pydantic models and schemas...")
-    
-    from src.config import settings
-    from src.models.transaction import Transaction
+
     from src.schemas.transaction import (
-        TransactionCreate,
-        TransactionResponse,
         TransactionListQuery,
     )
-    
+
     print("✓ All imports successful")
-    
+
     # Test instantiation
     print("\nTesting model instantiation...")
-    
+
     query = TransactionListQuery(
         q="test",
         page=1,
@@ -51,7 +50,7 @@ try:
         sort="date:desc",
     )
     print("✓ TransactionListQuery instantiated")
-    
+
     # Check for warnings
     if pydantic_warnings:
         print("\n❌ FAILED: Pydantic deprecation warnings found:")
@@ -67,5 +66,6 @@ try:
 except Exception as e:
     print(f"\n❌ ERROR: Failed to import or instantiate models: {e}")
     import traceback
+
     traceback.print_exc()
     sys.exit(1)

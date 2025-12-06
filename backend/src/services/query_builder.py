@@ -113,6 +113,10 @@ class QueryBuilder:
                     Transaction.phone_number.ilike(f"%{search_term}%"),
                     Transaction.product_category.ilike(f"%{search_term}%"),
                     Transaction.customer_region.ilike(f"%{search_term}%"),
+                    Transaction.product_name.ilike(f"%{search_term}%"),
+                    Transaction.brand.ilike(f"%{search_term}%"),
+                    Transaction.customer_id.ilike(f"%{search_term}%"),
+                    Transaction.product_id.ilike(f"%{search_term}%"),
                 )
             )
         else:
@@ -143,14 +147,26 @@ class QueryBuilder:
         if params.customer_region:
             conditions.append(Transaction.customer_region.in_(params.customer_region))  # type: ignore[arg-type]
 
+        if params.customer_type:
+            conditions.append(Transaction.customer_type.in_(params.customer_type))  # type: ignore[arg-type]
+
         if params.gender:
             conditions.append(Transaction.gender.in_(params.gender))  # type: ignore[arg-type]
 
         if params.product_category:
             conditions.append(Transaction.product_category.in_(params.product_category))  # type: ignore[arg-type]
 
+        if params.brand:
+            conditions.append(Transaction.brand.in_(params.brand))  # type: ignore[arg-type]
+
         if params.payment_method:
             conditions.append(Transaction.payment_method.in_(params.payment_method))  # type: ignore[arg-type]
+
+        if params.order_status:
+            conditions.append(Transaction.order_status.in_(params.order_status))  # type: ignore[arg-type]
+
+        if params.delivery_type:
+            conditions.append(Transaction.delivery_type.in_(params.delivery_type))  # type: ignore[arg-type]
 
         # Tags filter (contains any of the specified tags)
         if params.tags:
@@ -251,10 +267,14 @@ class QueryBuilder:
         """Get unique values and counts for filter fields."""
         metadata: Dict[str, Any] = {
             "customer_regions": [],
+            "customer_types": [],
             "genders": [],
             "product_categories": [],
+            "brands": [],
             "tags": [],
             "payment_methods": [],
+            "order_statuses": [],
+            "delivery_types": [],
             "age_range": {"min": 0, "max": 100},
             "date_range": {"min": None, "max": None},
         }
@@ -262,9 +282,13 @@ class QueryBuilder:
         # Get unique values with counts for categorical fields
         for field_name, model_field in [
             ("customer_regions", Transaction.customer_region),
+            ("customer_types", Transaction.customer_type),
             ("genders", Transaction.gender),
             ("product_categories", Transaction.product_category),
+            ("brands", Transaction.brand),
             ("payment_methods", Transaction.payment_method),
+            ("order_statuses", Transaction.order_status),
+            ("delivery_types", Transaction.delivery_type),
         ]:
             query = (
                 select(model_field, func.count(Transaction.id))  # type: ignore[arg-type]
