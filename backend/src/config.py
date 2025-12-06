@@ -21,10 +21,10 @@ class Settings(BaseSettings):
     api_host: str = Field(default="0.0.0.0", description="API host")
     api_port: int = Field(default=8000, description="API port")
     
-    # Database
+    # Database (use PostgreSQL in production via DATABASE_URL env var)
     database_url: str = Field(
         default="sqlite+aiosqlite:///./truestate.db",
-        description="Database connection URL"
+        description="Database connection URL (auto-converts postgresql:// to postgresql+asyncpg://)"
     )
     
     # Caching
@@ -35,7 +35,7 @@ class Settings(BaseSettings):
     
     # CORS
     cors_origins: str = Field(
-        default="http://localhost:5173,http://localhost:4173",
+        default="http://localhost:5173,http://localhost:4173,https://samay2504.github.io",
         description="Allowed CORS origins (comma-separated)"
     )
     
