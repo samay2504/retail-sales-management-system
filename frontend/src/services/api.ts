@@ -11,7 +11,7 @@ import type {
 } from '../types/api';
 
 // Determine API base URL
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://retail-sales-management-system-96ml.onrender.com';
 
 class ApiClient {
   private client: AxiosInstance;

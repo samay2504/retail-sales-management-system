@@ -39,7 +39,7 @@ jobs:
         working-directory: ./frontend
         run: npm run build
         env:
-          VITE_API_URL: ${{ secrets.API_URL || 'http://localhost:8000' }}
+          VITE_API_URL: ${{ secrets.API_URL || 'https://retail-sales-management-system-96ml.onrender.com' }}
       
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
