@@ -1,6 +1,10 @@
 """Script to verify no Pydantic deprecation warnings."""
 import sys
 import warnings
+from pathlib import Path
+
+# Add parent directory to path
+sys.path.insert(0, str(Path(__file__).parent.parent))
 
 # Capture warnings
 warnings.simplefilter("always", DeprecationWarning)
