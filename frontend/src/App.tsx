@@ -32,7 +32,8 @@ function TransactionsPage() {
 
   // Create stable filter key for comparison (prevents unnecessary page resets)
   const filtersKey = useMemo(() => {
-    const { page: _page, limit: _limit, sort: _sort, ...filterValues } = filters;
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { page, limit, sort, ...filterValues } = filters;
     return JSON.stringify(filterValues);
   }, [filters]);
 
@@ -74,8 +75,10 @@ function TransactionsPage() {
   const handleFiltersChange = useCallback((newFilters: TransactionFilters) => {
     setFilters((prev) => {
       // Only reset page if actual filter values changed (not page/limit/sort)
-      const { page: _prevPage, limit: _prevLimit, sort: _prevSort, ...prevFilterValues } = prev;
-      const { page: _newPage, limit: _newLimit, sort: _newSort, ...newFilterValues } = newFilters;
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const { page: prevPage, limit: prevLimit, sort: prevSort, ...prevFilterValues } = prev;
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const { page: newPage, limit: newLimit, sort: newSort, ...newFilterValues } = newFilters;
       const filtersChanged = JSON.stringify(prevFilterValues) !== JSON.stringify(newFilterValues);
       
       if (import.meta.env.DEV) {
@@ -123,7 +126,7 @@ function TransactionsPage() {
         if (filtered.length === 0) {
           delete newFilters[field];
         } else {
-          (newFilters as any)[field] = filtered;
+          (newFilters as Record<string, unknown>)[field] = filtered;
         }
       } else {
         // Remove entire field

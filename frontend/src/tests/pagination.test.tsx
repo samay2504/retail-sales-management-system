@@ -1,6 +1,7 @@
 /**
  * Pagination race condition tests
  */
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { renderHook, waitFor } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
@@ -36,7 +37,7 @@ describe('Pagination Race Condition Prevention', () => {
   it('should prevent race condition when quickly changing pages', async () => {
     // Setup: page 1 response (slow)
     const page1Response: TransactionListResponse = {
-      items: [{ id: 1, customer_name: 'Page 1' } as any],
+      items: [{ id: 1, customer_name: 'Page 1' }] as any,
       meta: {
         page: 1,
         limit: 10,
@@ -49,7 +50,7 @@ describe('Pagination Race Condition Prevention', () => {
 
     // Setup: page 2 response (fast)
     const page2Response: TransactionListResponse = {
-      items: [{ id: 2, customer_name: 'Page 2' } as any],
+      items: [{ id: 2, customer_name: 'Page 2' }] as any,
       meta: {
         page: 2,
         limit: 10,
@@ -116,7 +117,7 @@ describe('Pagination Race Condition Prevention', () => {
 
       const page = filters?.page || 1;
       return {
-        items: [{ id: page } as any],
+        items: [{ id: page }] as any,
         meta: {
           page,
           limit: 10,
@@ -151,7 +152,7 @@ describe('Pagination Race Condition Prevention', () => {
 
   it('should use keepPreviousData to prevent UI flicker', async () => {
     vi.mocked(apiClient.listTransactions).mockResolvedValue({
-      items: [{ id: 1 } as any],
+      items: [{ id: 1 }] as any,
       meta: {
         page: 1,
         limit: 10,
@@ -178,7 +179,7 @@ describe('Pagination Race Condition Prevention', () => {
 
     // Change to page 2
     vi.mocked(apiClient.listTransactions).mockResolvedValue({
-      items: [{ id: 2 } as any],
+      items: [{ id: 2 }] as any,
       meta: {
         page: 2,
         limit: 10,
