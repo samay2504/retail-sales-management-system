@@ -76,7 +76,6 @@ function TransactionsPage() {
       // Only reset page if actual filter values changed (not page/limit/sort)
       const { page: _prevPage, limit: _prevLimit, sort: _prevSort, ...prevFilterValues } = prev;
       const { page: _newPage, limit: _newLimit, sort: _newSort, ...newFilterValues } = newFilters;
-      
       const filtersChanged = JSON.stringify(prevFilterValues) !== JSON.stringify(newFilterValues);
       
       if (import.meta.env.DEV) {
@@ -94,13 +93,13 @@ function TransactionsPage() {
     });
   }, []);
 
-  const handlePageChange = useCallback((page: number) => {
+  const handlePageChange = useCallback((newPage: number) => {
     if (import.meta.env.DEV) {
-      console.debug('[handlePageChange]', { page, timestamp: Date.now() });
+      console.debug('[handlePageChange]', { page: newPage, timestamp: Date.now() });
     }
     setFilters((prev) => ({
       ...prev,
-      page,
+      page: newPage,
     }));
   }, []);
 
@@ -120,9 +119,11 @@ function TransactionsPage() {
       if (value && Array.isArray(newFilters[field])) {
         // Remove specific value from array
         const arr = newFilters[field] as string[];
-        newFilters[field] = arr.filter((v) => v !== value) as string[];
-        if ((newFilters[field] as string[]).length === 0) {
+        const filtered = arr.filter((v) => v !== value);
+        if (filtered.length === 0) {
           delete newFilters[field];
+        } else {
+          (newFilters as any)[field] = filtered;
         }
       } else {
         // Remove entire field
