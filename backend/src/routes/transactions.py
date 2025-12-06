@@ -1,4 +1,5 @@
 """Transaction controller/routes."""
+
 from typing import List
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -36,7 +37,7 @@ async def list_transactions(
 ) -> TransactionListResponse:
     """
     List transactions with search, filtering, sorting, and pagination.
-    
+
     - **q**: Search by customer name or phone number
     - **page**: Page number (1-indexed)
     - **limit**: Number of items per page (default: 10, max: 100)
@@ -60,15 +61,15 @@ async def list_transactions(
             date_from=date_from,
             date_to=date_to,
         )
-        
+
         # Get service
         service = TransactionService(db)
-        
+
         # List transactions
         result = await service.list_transactions(query_params)
-        
+
         return TransactionListResponse(**result)
-    
+
     except ValueError as e:
         logger.error(f"Validation error: {e}")
         raise HTTPException(status_code=400, detail=str(e))
@@ -86,12 +87,12 @@ async def get_transaction(
     try:
         service = TransactionService(db)
         transaction = await service.get_transaction_by_id(transaction_id)
-        
+
         if not transaction:
             raise HTTPException(status_code=404, detail="Transaction not found")
-        
+
         return TransactionResponse.model_validate(transaction)
-    
+
     except HTTPException:
         raise
     except Exception as e:

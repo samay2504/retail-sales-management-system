@@ -1,4 +1,5 @@
 """SQLAlchemy base models and database setup."""
+
 from datetime import datetime
 from typing import Any
 from sqlalchemy import Column, DateTime
@@ -10,12 +11,12 @@ from src.config import settings
 
 class Base(DeclarativeBase):
     """Base class for all database models."""
-    
+
     @declared_attr.directive
     def __tablename__(cls) -> str:
         """Generate table name from class name."""
         return cls.__name__.lower()
-    
+
     id: Any
     created_at: Any
     updated_at: Any
@@ -23,7 +24,7 @@ class Base(DeclarativeBase):
 
 class TimestampMixin:
     """Mixin for timestamp columns."""
-    
+
     created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False)
 
@@ -49,7 +50,7 @@ AsyncSessionLocal = async_sessionmaker(
 )
 
 
-async def get_db() -> AsyncSession:
+async def get_db() -> AsyncSession:  # type: ignore[misc]
     """Dependency for getting database sessions."""
     async with AsyncSessionLocal() as session:
         try:

@@ -1,4 +1,5 @@
 """Main FastAPI application."""
+
 from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
@@ -21,24 +22,24 @@ async def lifespan(app: FastAPI):
     """Lifespan context manager for startup and shutdown."""
     # Startup
     logger.info("Starting TruEstate API...")
-    
+
     # Initialize database
     await init_db()
     logger.info("Database initialized")
-    
+
     # Initialize cache
     await cache_manager.initialize()
     logger.info("Cache initialized")
-    
+
     yield
-    
+
     # Shutdown
     logger.info("Shutting down TruEstate API...")
-    
+
     # Close cache
     await cache_manager.shutdown()
     logger.info("Cache closed")
-    
+
     # Close database
     await close_db()
     logger.info("Database closed")
@@ -97,7 +98,7 @@ async def global_exception_handler(request, exc):
 
 if __name__ == "__main__":
     import uvicorn
-    
+
     uvicorn.run(
         "index:app",
         host=settings.api_host,

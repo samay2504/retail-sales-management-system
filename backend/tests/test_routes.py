@@ -1,4 +1,5 @@
 """Tests for API routes."""
+
 import pytest
 from httpx import ASGITransport, AsyncClient
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -10,17 +11,17 @@ from src.models import get_db
 @pytest.mark.asyncio
 async def test_health_endpoint(db_session: AsyncSession):
     """Test health check endpoint."""
-    
+
     async def override_get_db():
         yield db_session
-    
+
     app.dependency_overrides[get_db] = override_get_db
-    
+
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
         response = await client.get("/api/health")
-    
+
     app.dependency_overrides.clear()
-    
+
     assert response.status_code == 200
     data = response.json()
     assert data["status"] == "healthy"
@@ -31,17 +32,17 @@ async def test_health_endpoint(db_session: AsyncSession):
 @pytest.mark.asyncio
 async def test_root_endpoint(db_session: AsyncSession):
     """Test root endpoint."""
-    
+
     async def override_get_db():
         yield db_session
-    
+
     app.dependency_overrides[get_db] = override_get_db
-    
+
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
         response = await client.get("/")
-    
+
     app.dependency_overrides.clear()
-    
+
     assert response.status_code == 200
     data = response.json()
     assert data["name"] == "TruEstate API"
@@ -51,17 +52,17 @@ async def test_root_endpoint(db_session: AsyncSession):
 @pytest.mark.asyncio
 async def test_transactions_endpoint_empty(db_session: AsyncSession):
     """Test transactions endpoint with empty database."""
-    
+
     async def override_get_db():
         yield db_session
-    
+
     app.dependency_overrides[get_db] = override_get_db
-    
+
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
         response = await client.get("/api/transactions")
-    
+
     app.dependency_overrides.clear()
-    
+
     assert response.status_code == 200
     data = response.json()
     assert "items" in data
@@ -73,17 +74,17 @@ async def test_transactions_endpoint_empty(db_session: AsyncSession):
 @pytest.mark.asyncio
 async def test_transactions_endpoint_with_data(db_session: AsyncSession, sample_transactions):
     """Test transactions endpoint with sample data."""
-    
+
     async def override_get_db():
         yield db_session
-    
+
     app.dependency_overrides[get_db] = override_get_db
-    
+
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
         response = await client.get("/api/transactions")
-    
+
     app.dependency_overrides.clear()
-    
+
     assert response.status_code == 200
     data = response.json()
     assert len(data["items"]) == 3
@@ -95,17 +96,17 @@ async def test_transactions_endpoint_with_data(db_session: AsyncSession, sample_
 @pytest.mark.asyncio
 async def test_filter_metadata_endpoint(db_session: AsyncSession, sample_transactions):
     """Test filter metadata endpoint."""
-    
+
     async def override_get_db():
         yield db_session
-    
+
     app.dependency_overrides[get_db] = override_get_db
-    
+
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
         response = await client.get("/api/meta/filters")
-    
+
     app.dependency_overrides.clear()
-    
+
     assert response.status_code == 200
     data = response.json()
     assert "customer_regions" in data

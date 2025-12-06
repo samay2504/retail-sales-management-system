@@ -1,4 +1,5 @@
 """Meta endpoints for filters and system info."""
+
 from fastapi import APIRouter, Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -19,7 +20,7 @@ async def get_filter_metadata(
 ) -> FilterMetaResponse:
     """
     Get filter metadata including unique values and counts for all filterable fields.
-    
+
     Returns:
     - Unique values with counts for: regions, genders, categories, tags, payment methods
     - Min/max ranges for: age, dates
@@ -28,7 +29,7 @@ async def get_filter_metadata(
         service = TransactionService(db)
         metadata = await service.get_filter_metadata()
         return FilterMetaResponse(**metadata)
-    
+
     except Exception as e:
         logger.error(f"Error getting filter metadata: {e}", exc_info=True)
         return FilterMetaResponse(

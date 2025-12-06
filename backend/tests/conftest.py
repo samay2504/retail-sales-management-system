@@ -1,4 +1,5 @@
 """Test configuration and fixtures."""
+
 import pytest
 import asyncio
 from typing import AsyncGenerator
@@ -39,11 +40,11 @@ async def db_session() -> AsyncGenerator[AsyncSession, None]:
     # Create tables
     async with test_engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
-    
+
     # Create session
     async with TestSessionLocal() as session:
         yield session
-    
+
     # Drop tables
     async with test_engine.begin() as conn:
         await conn.run_sync(Base.metadata.drop_all)
@@ -114,29 +115,37 @@ async def sample_transactions(db_session: AsyncSession) -> list[Transaction]:
             employee_name="Carol Davis",
         ),
     ]
-    
+
     db_session.add_all(transactions)
     await db_session.commit()
-    
+
     # Refresh to get IDs
     for transaction in transactions:
         await db_session.refresh(transaction)
-    
+
     # Create FTS table for testing
-    await db_session.execute(text("""
+    await db_session.execute(
+        text(
+            """
         CREATE VIRTUAL TABLE IF NOT EXISTS transactions_fts USING fts5(
             customer_name,
             phone_number,
             content='transactions',
             content_rowid='id'
         )
-    """))
-    
-    await db_session.execute(text("""
+    """
+        )
+    )
+
+    await db_session.execute(
+        text(
+            """
         INSERT INTO transactions_fts(rowid, customer_name, phone_number)
         SELECT id, customer_name, phone_number FROM transactions
-    """))
-    
+    """
+        )
+    )
+
     await db_session.commit()
-    
+
     return transactions
