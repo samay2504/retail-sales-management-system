@@ -29,61 +29,96 @@ class QueryBuilder:
         return normalized
     
     async def _ensure_fts_table(self) -> None:
-        """Ensure FTS5 virtual table exists."""
-        # Check if FTS table exists
-        check_query = text("""
-            SELECT name FROM sqlite_master 
-            WHERE type='table' AND name='transactions_fts'
-        """)
-        result = await self.session.execute(check_query)
-        exists = result.scalar() is not None
+        """Ensure FTS table exists (handles both SQLite and PostgreSQL)."""
+        # Detect database type from session bind
+        db_url = str(self.session.bind.url)
+        is_postgres = 'postgresql' in db_url
         
-        if not exists:
-            logger.info("Creating FTS5 virtual table")
-            # Create FTS5 virtual table
-            create_fts = text("""
-                CREATE VIRTUAL TABLE transactions_fts USING fts5(
-                    customer_name,
-                    phone_number,
-                    content='transactions',
-                    content_rowid='id'
-                )
+        if is_postgres:
+            # PostgreSQL uses tsvector column, check if it exists
+            check_query = text("""
+                SELECT column_name 
+                FROM information_schema.columns 
+                WHERE table_name = 'transactions' AND column_name = 'search_vector'
             """)
-            await self.session.execute(create_fts)
+            result = await self.session.execute(check_query)
+            exists = result.scalar() is not None
             
-            # Populate FTS table
-            populate_fts = text("""
-                INSERT INTO transactions_fts(rowid, customer_name, phone_number)
-                SELECT id, customer_name, phone_number FROM transactions
+            if not exists:
+                logger.info("PostgreSQL full-text search column not found - skipping FTS setup")
+                # Note: Migration script should have already set up the search_vector column
+                # If it doesn't exist, the database needs to be properly migrated
+        else:
+            # SQLite FTS5 setup
+            check_query = text("""
+                SELECT name FROM sqlite_master 
+                WHERE type='table' AND name='transactions_fts'
             """)
-            await self.session.execute(populate_fts)
-            await self.session.commit()
-            logger.info("FTS5 table created and populated")
+            result = await self.session.execute(check_query)
+            exists = result.scalar() is not None
+            
+            if not exists:
+                logger.info("Creating FTS5 virtual table")
+                # Create FTS5 virtual table
+                create_fts = text("""
+                    CREATE VIRTUAL TABLE transactions_fts USING fts5(
+                        customer_name,
+                        phone_number,
+                        content='transactions',
+                        content_rowid='id'
+                    )
+                """)
+                await self.session.execute(create_fts)
+                
+                # Populate FTS table
+                populate_fts = text("""
+                    INSERT INTO transactions_fts(rowid, customer_name, phone_number)
+                    SELECT id, customer_name, phone_number FROM transactions
+                """)
+                await self.session.execute(populate_fts)
+                await self.session.commit()
+                logger.info("FTS5 table created and populated")
     
     def _build_base_query(self) -> Select:
         """Build base SELECT query."""
         return select(Transaction)
     
     def _apply_search(self, query: Select, search_term: str) -> Tuple[Select, bool]:
-        """Apply full-text search using FTS5."""
+        """Apply full-text search (handles both SQLite FTS5 and PostgreSQL tsvector)."""
         if not search_term:
             return query, False
         
         normalized = self._normalize_search_query(search_term)
         
-        # Use FTS5 MATCH for full-text search
-        # Join with FTS table and filter by match
-        fts_subquery = text("""
-            SELECT rowid as id FROM transactions_fts 
-            WHERE transactions_fts MATCH :search_term
-        """)
+        # Detect database type
+        db_url = str(self.session.bind.url)
+        is_postgres = 'postgresql' in db_url
         
-        # Add join condition
-        query = query.where(
-            Transaction.id.in_(
-                select(text("id")).select_from(text(f"({fts_subquery.text})")).params(search_term=normalized)
+        if is_postgres:
+            # PostgreSQL: Use ILIKE for flexible pattern matching
+            # This works with or without search_vector column
+            # ILIKE is case-insensitive and handles partial matches well
+            query = query.where(
+                or_(
+                    Transaction.customer_name.ilike(f"%{search_term}%"),
+                    Transaction.phone_number.ilike(f"%{search_term}%"),
+                    Transaction.product_category.ilike(f"%{search_term}%"),
+                    Transaction.customer_region.ilike(f"%{search_term}%")
+                )
             )
-        )
+        else:
+            # SQLite FTS5 MATCH for full-text search
+            fts_subquery = text("""
+                SELECT rowid as id FROM transactions_fts 
+                WHERE transactions_fts MATCH :search_term
+            """)
+            
+            # Add join condition
+            query = query.where(
+                Transaction.id.in_(
+                    select(text("id")).select_from(text(f"({fts_subquery.text})")).params(search_term=normalized)
+                )
+            )
         
         return query, True
     
