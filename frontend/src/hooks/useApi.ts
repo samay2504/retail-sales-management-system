@@ -45,11 +45,13 @@ export function useTransactions(
       }
       return apiClient.listTransactions(filters, signal);
     },
-    placeholderData: (previousData) => previousData, // Prevent UI flicker during page changes (replaces keepPreviousData in v5)
-    staleTime: 5000, // 5 seconds for good UX without excessive refetches
-    gcTime: 300000, // 5 minutes (previously cacheTime)
-    retry: 1,
+    placeholderData: (previousData) => previousData, // Prevent UI flicker during page changes
+    staleTime: 30000, // 30 seconds - aggressive caching for better UX
+    gcTime: 600000, // 10 minutes - keep in memory longer
+    retry: 2, // Retry failed requests twice
+    retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000), // Exponential backoff
     refetchOnWindowFocus: false, // Prevent unwanted refetches
+    refetchOnMount: false, // Don't refetch on component mount if data is fresh
   });
 }
 
@@ -72,7 +74,12 @@ export function useFilterMetadata(): UseQueryResult<FilterMetadata, Error> {
   return useQuery({
     queryKey: ['filterMetadata'],
     queryFn: () => apiClient.getFilterMetadata(),
-    staleTime: 300000, // 5 minutes
-    gcTime: 600000, // 10 minutes
+    staleTime: Infinity, // Never automatically refetch - metadata rarely changes
+    gcTime: Infinity, // Keep forever in memory
+    retry: 3, // Retry 3 times for critical metadata
+    retryDelay: 1000, // 1 second between retries
+    refetchOnWindowFocus: false,
+    refetchOnMount: false,
+    refetchOnReconnect: false,
   });
 }

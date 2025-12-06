@@ -1,6 +1,7 @@
 /**
  * Filter panel component
  */
+import { memo } from 'react';
 import type { FilterMetadata, TransactionFilters } from '../types/api';
 
 interface FilterPanelProps {
@@ -10,7 +11,7 @@ interface FilterPanelProps {
   onClear: () => void;
 }
 
-export const FilterPanel = ({
+export const FilterPanel = memo(({
   metadata,
   filters,
   onChange,
@@ -283,4 +284,4 @@ export const FilterPanel = ({
       </div>
     </div>
   );
-};
+});

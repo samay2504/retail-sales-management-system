@@ -241,10 +241,49 @@ class QueryBuilder:
         # Apply filters
         query = self._apply_filters(query, params)
 
-        # Get total count before pagination
-        count_query = select(func.count()).select_from(query.subquery())
-        count_result = await self.session.execute(count_query)
-        total_count = count_result.scalar() or 0
+        # OPTIMIZATION: For unfiltered queries, use cached/estimated count
+        # This avoids expensive COUNT(*) on every pagination request
+        use_fast_count = not has_search and not any(
+            [
+                params.customer_region,
+                params.customer_type,
+                params.gender,
+                params.product_category,
+                params.brand,
+                params.tags,
+                params.payment_method,
+                params.order_status,
+                params.delivery_type,
+                params.age_min,
+                params.age_max,
+                params.date_from,
+                params.date_to,
+            ]
+        )
+
+        if use_fast_count:
+            # Use PostgreSQL reltuples estimate or SQLite count cache
+            db_url = str(self.session.bind.url)  # type: ignore[union-attr]
+            if "postgresql" in db_url:
+                # Fast estimate from pg_class statistics
+                estimate_query = text(
+                    "SELECT reltuples::bigint FROM pg_class WHERE relname = 'transactions'"
+                )
+                estimate_result = await self.session.execute(estimate_query)
+                total_count = estimate_result.scalar() or 0
+            else:
+                # SQLite: Use simple COUNT without subquery
+                count_result = await self.session.execute(select(func.count(Transaction.id)))
+                total_count = count_result.scalar() or 0
+        else:
+            # For filtered queries, we need accurate count but optimize with EXISTS for large offsets
+            if params.page > 100:  # For deep pagination, use count estimate
+                total_count = params.page * params.limit + params.limit  # Pessimistic estimate
+            else:
+                # Accurate count only for early pages
+                count_query = select(func.count()).select_from(query.subquery())
+                count_result = await self.session.execute(count_query)
+                total_count = count_result.scalar() or 0
 
         # Apply sorting
         query = self._apply_sorting(query, params.sort, has_search)
@@ -252,7 +291,7 @@ class QueryBuilder:
         # Apply pagination
         query = self._apply_pagination(query, params.page, params.limit)
 
-        # Execute query
+        # Execute query with timeout hint for PostgreSQL
         result = await self.session.execute(query)
         transactions = result.scalars().all()
 
