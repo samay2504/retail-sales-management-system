@@ -1,12 +1,16 @@
 # TruEstate - Retail Sales Management System
 
-[![Backend CI](https://github.com/yourusername/truestate/actions/workflows/backend-ci.yml/badge.svg)](https://github.com/yourusername/truestate/actions/workflows/backend-ci.yml)
-[![Frontend CI](https://github.com/yourusername/truestate/actions/workflows/frontend-ci.yml/badge.svg)](https://github.com/yourusername/truestate/actions/workflows/frontend-ci.yml)
-[![Deploy](https://github.com/yourusername/truestate/actions/workflows/deploy-gh-pages.yml/badge.svg)](https://github.com/yourusername/truestate/actions/workflows/deploy-gh-pages.yml)
+[![Backend CI](https://github.com/samay2504/retail-sales-management-system/actions/workflows/backend-ci.yml/badge.svg)](https://github.com/samay2504/retail-sales-management-system/actions/workflows/backend-ci.yml)
+[![Frontend CI](https://github.com/samay2504/retail-sales-management-system/actions/workflows/frontend-ci.yml/badge.svg)](https://github.com/samay2504/retail-sales-management-system/actions/workflows/frontend-ci.yml)
+[![Deploy](https://github.com/samay2504/retail-sales-management-system/actions/workflows/deploy-gh-pages.yml/badge.svg)](https://github.com/samay2504/retail-sales-management-system/actions/workflows/deploy-gh-pages.yml)
 
 A modern, production-ready retail sales management system with advanced search, filtering, and analytics capabilities.
 
-**🚀 Live Application**: [https://yourusername.github.io/truestate](https://yourusername.github.io/truestate)
+**🚀 Live Application**: [https://samay2504.github.io/retail-sales-management-system](https://samay2504.github.io/retail-sales-management-system)
+
+**📚 Production Setup**: 
+- [DEPLOYMENT.md](DEPLOYMENT.md) - General deployment guide
+- [RENDER_DEPLOY.md](RENDER_DEPLOY.md) - Render-specific configuration
 
 ---
 
