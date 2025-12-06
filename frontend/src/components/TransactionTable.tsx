@@ -1,6 +1,7 @@
 /**
- * Transaction table component
+ * Transaction table component with dynamic columns
  */
+import { useMemo } from 'react';
 import type { Transaction } from '../types/api';
 
 interface TransactionTableProps {
@@ -8,10 +9,46 @@ interface TransactionTableProps {
   isLoading?: boolean;
 }
 
+// Column configuration for display
+const COLUMN_CONFIG: Record<string, { label: string; format?: (val: unknown) => string; priority: number }> = {
+  transaction_id: { label: 'TXN ID', priority: 1 },
+  id: { label: 'ID', priority: 2 },
+  customer_id: { label: 'CUST ID', priority: 3 },
+  customer_name: { label: 'Customer', priority: 4 },
+  phone_number: { label: 'Phone', priority: 5 },
+  customer_region: { label: 'Region', priority: 6 },
+  customer_type: { label: 'Type', priority: 7 },
+  gender: { label: 'Gender', priority: 8 },
+  age: { label: 'Age', priority: 9 },
+  product_id: { label: 'PROD ID', priority: 10 },
+  product_name: { label: 'Product', priority: 11 },
+  brand: { label: 'Brand', priority: 12 },
+  product_category: { label: 'Category', priority: 13 },
+  quantity: { label: 'Qty', priority: 14 },
+  price_per_unit: { label: 'Unit Price', format: (v) => `$${(v as number).toFixed(2)}`, priority: 15 },
+  discount_percentage: { label: 'Discount %', format: (v) => `${v}%`, priority: 16 },
+  final_amount: { label: 'Amount', format: (v) => `$${(v as number).toFixed(2)}`, priority: 17 },
+  payment_method: { label: 'Payment', priority: 18 },
+  order_status: { label: 'Status', priority: 19 },
+  delivery_type: { label: 'Delivery', priority: 20 },
+  date: { label: 'Date', format: (v) => new Date(v as string).toLocaleDateString(), priority: 21 },
+  store_location: { label: 'Store', priority: 22 },
+};
+
 export const TransactionTable = ({
   transactions,
   isLoading = false,
 }: TransactionTableProps) => {
+  // Extract columns dynamically from first transaction
+  const columns = useMemo(() => {
+    if (transactions.length === 0) return [];
+    const firstRow = transactions[0];
+    return Object.keys(firstRow)
+      .filter(key => COLUMN_CONFIG[key] && !['created_at', 'updated_at', 'tags', 'total_amount', 'store_id', 'salesperson_id', 'employee_name'].includes(key))
+      .sort((a, b) => COLUMN_CONFIG[a].priority - COLUMN_CONFIG[b].priority)
+      .slice(0, 15); // Show top 15 most important columns
+  }, [transactions]);
+
   if (isLoading) {
     return (
       <div className="glass-card overflow-hidden">
@@ -19,7 +56,7 @@ export const TransactionTable = ({
           <table className="w-full min-w-max">
             <thead className="bg-white/5 border-b border-white/10">
               <tr>
-                {['ID', 'Customer', 'Phone', 'Region', 'Category', 'Qty', 'Amount', 'Payment', 'Date'].map(
+                {['TXN ID', 'ID', 'CUST ID', 'Customer', 'Phone', 'Region', 'Type', 'PROD ID', 'Product', 'Brand', 'Category', 'Qty', 'Amount', 'Payment', 'Date'].map(
                   (header) => (
                     <th
                       key={header}
@@ -34,7 +71,7 @@ export const TransactionTable = ({
             <tbody>
               {[...Array(5)].map((_, i) => (
                 <tr key={i} className="border-b border-white/5">
-                  {[...Array(9)].map((_, j) => (
+                  {[...Array(15)].map((_, j) => (
                     <td key={j} className="px-3 sm:px-4 py-3">
                       <div className="skeleton h-4 w-20 rounded"></div>
                     </td>
@@ -82,33 +119,14 @@ export const TransactionTable = ({
         <table className="w-full min-w-max">
           <thead className="bg-white/5 border-b border-white/10">
             <tr>
-              <th className="px-3 sm:px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider whitespace-nowrap">
-                ID
-              </th>
-              <th className="px-3 sm:px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider whitespace-nowrap">
-                Customer
-              </th>
-              <th className="px-3 sm:px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider whitespace-nowrap">
-                Phone
-              </th>
-              <th className="px-3 sm:px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider whitespace-nowrap">
-                Region
-              </th>
-              <th className="px-3 sm:px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider whitespace-nowrap">
-                Category
-              </th>
-              <th className="px-3 sm:px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider whitespace-nowrap">
-                Qty
-              </th>
-              <th className="px-3 sm:px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider whitespace-nowrap">
-                Amount
-              </th>
-              <th className="px-3 sm:px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider whitespace-nowrap">
-                Payment
-              </th>
-              <th className="px-3 sm:px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider whitespace-nowrap">
-                Date
-              </th>
+              {columns.map((col) => (
+                <th
+                  key={col}
+                  className="px-3 sm:px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider whitespace-nowrap"
+                >
+                  {COLUMN_CONFIG[col]?.label || col}
+                </th>
+              ))}
             </tr>
           </thead>
           <tbody className="divide-y divide-white/5">
@@ -117,49 +135,37 @@ export const TransactionTable = ({
                 key={transaction.id}
                 className="hover:bg-white/5 transition-colors cursor-pointer"
               >
-                <td className="px-3 sm:px-4 py-3 whitespace-nowrap">
-                  <span className="text-sm text-gray-300">#{transaction.id}</span>
-                </td>
-                <td className="px-3 sm:px-4 py-3">
-                  <div className="text-sm min-w-[140px]">
-                    <div className="font-medium text-gray-200">{transaction.customer_name}</div>
-                    <div className="text-gray-500 text-xs">
-                      {transaction.gender}, {transaction.age}y
-                    </div>
-                  </div>
-                </td>
-                <td className="px-3 sm:px-4 py-3 whitespace-nowrap">
-                  <span className="text-sm text-gray-400">{transaction.phone_number}</span>
-                </td>
-                <td className="px-3 sm:px-4 py-3 whitespace-nowrap">
-                  <span className="badge-primary text-xs">{transaction.customer_region}</span>
-                </td>
-                <td className="px-3 sm:px-4 py-3 whitespace-nowrap">
-                  <span className="text-sm text-gray-300">{transaction.product_category}</span>
-                </td>
-                <td className="px-3 sm:px-4 py-3 whitespace-nowrap text-center">
-                  <span className="text-sm font-medium text-gray-200">{transaction.quantity}</span>
-                </td>
-                <td className="px-3 sm:px-4 py-3 whitespace-nowrap">
-                  <div className="text-sm">
-                    <div className="font-medium text-primary">
-                      ${transaction.final_amount.toFixed(2)}
-                    </div>
-                    {transaction.discount_percentage > 0 && (
-                      <div className="text-xs text-gray-500 line-through">
-                        ${transaction.total_amount.toFixed(2)}
-                      </div>
-                    )}
-                  </div>
-                </td>
-                <td className="px-3 sm:px-4 py-3 whitespace-nowrap">
-                  <span className="badge-cyan text-xs">{transaction.payment_method}</span>
-                </td>
-                <td className="px-3 sm:px-4 py-3 whitespace-nowrap">
-                  <span className="text-sm text-gray-400">
-                    {new Date(transaction.date).toLocaleDateString()}
-                  </span>
-                </td>
+                {columns.map((col) => {
+                  const value = transaction[col as keyof Transaction];
+                  const formatter = COLUMN_CONFIG[col]?.format;
+                  const displayValue = formatter && value !== null && value !== undefined
+                    ? formatter(value)
+                    : String(value || '-');
+
+                  // Special styling for specific columns
+                  const cellClass = 'px-3 sm:px-4 py-3 whitespace-nowrap text-sm';
+                  let contentClass = 'text-gray-300';
+
+                  if (col === 'transaction_id' || col === 'id' || col === 'customer_id' || col === 'product_id') {
+                    contentClass = 'text-primary font-mono text-xs';
+                  } else if (col === 'final_amount' || col === 'price_per_unit') {
+                    contentClass = 'text-primary font-semibold';
+                  } else if (col === 'customer_region' || col === 'customer_type' || col === 'payment_method' || col === 'order_status' || col === 'delivery_type') {
+                    contentClass = 'badge-primary text-xs inline-block';
+                  } else if (col === 'customer_name' || col === 'product_name') {
+                    contentClass = 'text-gray-200 font-medium';
+                  } else if (col === 'brand') {
+                    contentClass = 'text-cyan-400';
+                  }
+
+                  return (
+                    <td key={col} className={cellClass}>
+                      <span className={contentClass}>
+                        {displayValue}
+                      </span>
+                    </td>
+                  );
+                })}
               </tr>
             ))}
           </tbody>

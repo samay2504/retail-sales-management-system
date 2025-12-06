@@ -303,7 +303,7 @@ class QueryBuilder:
         return list(transactions), total_count
 
     async def get_filter_metadata(self) -> Dict[str, Any]:
-        """Get unique values and counts for filter fields."""
+        """Get unique values and counts for filter fields with parallel execution."""
         metadata: Dict[str, Any] = {
             "customer_regions": [],
             "customer_types": [],
@@ -318,28 +318,44 @@ class QueryBuilder:
             "date_range": {"min": None, "max": None},
         }
 
-        # Get unique values with counts for categorical fields
-        for field_name, model_field in [
-            ("customer_regions", Transaction.customer_region),
-            ("customer_types", Transaction.customer_type),
-            ("genders", Transaction.gender),
-            ("product_categories", Transaction.product_category),
-            ("brands", Transaction.brand),
-            ("payment_methods", Transaction.payment_method),
-            ("order_statuses", Transaction.order_status),
-            ("delivery_types", Transaction.delivery_type),
-        ]:
+        # OPTIMIZATION: Execute all categorical queries in parallel using asyncio.gather
+        import asyncio
+
+        async def get_field_counts(field_name: str, model_field: Any) -> tuple:
+            """Get counts for a single field with LIMIT for performance."""
             query = (
                 select(model_field, func.count(Transaction.id))  # type: ignore[arg-type]
                 .group_by(model_field)
                 .order_by(func.count(Transaction.id).desc())
+                .limit(50)  # Limit to top 50 values per field for performance
             )
             result = await self.session.execute(query)
             rows = result.all()
-            metadata[field_name] = [{"value": row[0], "count": row[1]} for row in rows]
+            return field_name, [{"value": row[0], "count": row[1]} for row in rows]
 
-        # Get unique tags (split comma-separated tags)
-        query = select(Transaction.tags).where(Transaction.tags.isnot(None))  # type: ignore[assignment]
+        # Execute all field queries in parallel
+        field_tasks = [
+            get_field_counts("customer_regions", Transaction.customer_region),
+            get_field_counts("customer_types", Transaction.customer_type),
+            get_field_counts("genders", Transaction.gender),
+            get_field_counts("product_categories", Transaction.product_category),
+            get_field_counts("brands", Transaction.brand),
+            get_field_counts("payment_methods", Transaction.payment_method),
+            get_field_counts("order_statuses", Transaction.order_status),
+            get_field_counts("delivery_types", Transaction.delivery_type),
+        ]
+
+        # Execute all queries concurrently
+        results = await asyncio.gather(*field_tasks)
+        for field_name, values in results:
+            metadata[field_name] = values
+
+        # Get unique tags (optimized with LIMIT)
+        query = (
+            select(Transaction.tags)
+            .where(Transaction.tags.isnot(None))  # type: ignore[assignment]
+            .limit(10000)  # Sample first 10k rows for tags
+        )
         result = await self.session.execute(query)
         all_tags: Dict[str, int] = {}
         for row in result.scalars():
@@ -348,20 +364,27 @@ class QueryBuilder:
                 for tag in tags:
                     all_tags[tag] = all_tags.get(tag, 0) + 1
 
-        metadata["tags"] = [
-            {"value": tag, "count": count}
-            for tag, count in sorted(all_tags.items(), key=lambda x: x[1], reverse=True)
-        ]
+        metadata["tags"] = sorted(
+            [{"value": tag, "count": count} for tag, count in all_tags.items()],
+            key=lambda x: x["count"],
+            reverse=True,
+        )[
+            :30
+        ]  # Return top 30 tags only
 
-        # Get age range
-        age_query = select(func.min(Transaction.age), func.max(Transaction.age))
-        age_result = await self.session.execute(age_query)
+        # Get age and date ranges in parallel
+        age_task = self.session.execute(
+            select(func.min(Transaction.age), func.max(Transaction.age))
+        )
+        date_task = self.session.execute(
+            select(func.min(Transaction.date), func.max(Transaction.date))
+        )
+
+        age_result, date_result = await asyncio.gather(age_task, date_task)
+
         age_row = age_result.one()
         metadata["age_range"] = {"min": age_row[0] or 0, "max": age_row[1] or 100}
 
-        # Get date range
-        date_query = select(func.min(Transaction.date), func.max(Transaction.date))
-        date_result = await self.session.execute(date_query)
         date_row = date_result.one()
         metadata["date_range"] = {"min": date_row[0], "max": date_row[1]}
 
