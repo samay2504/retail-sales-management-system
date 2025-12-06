@@ -62,7 +62,7 @@ class TransactionService:
 
         # Build response
         response = {
-            "items": [TransactionResponse.model_validate(t) for t in transactions],
+            "items": [TransactionResponse.model_validate(t.to_dict()) for t in transactions],
             "meta": PaginationMeta(
                 total=total_count,
                 page=params.page,

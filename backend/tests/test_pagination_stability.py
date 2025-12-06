@@ -15,21 +15,32 @@ class TestPaginationStability:
     async def test_deterministic_ordering_default_sort(self, db_session: AsyncSession):
         """Test that default sorting includes id tiebreaker for deterministic results."""
         # Insert test transactions with same date
-        test_date = "2024-01-15"
+        from datetime import date
+
+        test_date = date(2024, 1, 15)
         transactions = [
             Transaction(
+                transaction_id=100 + i,
+                customer_id=f"CUST-{100 + i:05d}",
                 customer_name=f"Customer {i}",
                 phone_number=f"555-000{i}",
                 customer_region="North",
+                customer_type="New",
                 gender="Male",
                 age=30,
+                product_id=f"PROD-{100 + i:04d}",
+                product_name=f"Product {i}",
+                brand="TestBrand",
                 product_category="Electronics",
+                tags=None,
                 quantity=1,
                 price_per_unit=100.0,
                 total_amount=100.0,
                 discount_percentage=0,
                 final_amount=100.0,
                 payment_method="Cash",
+                order_status="Completed",
+                delivery_type="Standard",
                 store_id="S001",
                 store_location="Downtown",
                 salesperson_id="EMP001",
@@ -109,28 +120,39 @@ class TestPaginationStability:
     @pytest.mark.asyncio
     async def test_ordering_with_custom_sort(self, db_session: AsyncSession):
         """Test that custom sort fields also include id tiebreaker."""
+        from datetime import date
+
         builder = QueryBuilder(db_session)
 
         # Insert transactions with same quantity
         for i in range(5):
             t = Transaction(
+                transaction_id=200 + i,
+                customer_id=f"CUST-{200 + i:05d}",
                 customer_name=f"Test {i}",
                 phone_number=f"555-{i:04d}",
                 customer_region="North",
+                customer_type="Returning",
                 gender="Male",
                 age=25,
+                product_id=f"PROD-{200 + i:04d}",
+                product_name=f"Food Item {i}",
+                brand="FoodBrand",
                 product_category="Food",
+                tags=None,
                 quantity=5,  # Same quantity
                 price_per_unit=10.0,
                 total_amount=50.0,
                 discount_percentage=0,
                 final_amount=50.0,
                 payment_method="Card",
+                order_status="Completed",
+                delivery_type="Standard",
                 store_id="S001",
                 store_location="Downtown",
                 salesperson_id="EMP002",
                 employee_name="Jane Doe",
-                date="2024-01-20",
+                date=date(2024, 1, 20),
             )
             db_session.add(t)
         await db_session.commit()
