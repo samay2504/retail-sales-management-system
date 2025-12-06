@@ -34,10 +34,14 @@ async def get_filter_metadata(
         logger.error(f"Error getting filter metadata: {e}", exc_info=True)
         return FilterMetaResponse(
             customer_regions=[],
+            customer_types=[],
             genders=[],
             product_categories=[],
+            brands=[],
             tags=[],
             payment_methods=[],
+            order_statuses=[],
+            delivery_types=[],
         )
 
 

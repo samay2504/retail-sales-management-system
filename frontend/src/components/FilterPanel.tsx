@@ -37,10 +37,14 @@ export const FilterPanel = ({
 
   const activeFilterCount = [
     filters.customer_region?.length || 0,
+    filters.customer_type?.length || 0,
     filters.gender?.length || 0,
     filters.product_category?.length || 0,
+    filters.brand?.length || 0,
     filters.tags?.length || 0,
     filters.payment_method?.length || 0,
+    filters.order_status?.length || 0,
+    filters.delivery_type?.length || 0,
     filters.age_min !== undefined ? 1 : 0,
     filters.age_max !== undefined ? 1 : 0,
     filters.date_from ? 1 : 0,
@@ -75,6 +79,27 @@ export const FilterPanel = ({
                 className="rounded border-gray-600 bg-white/5 text-primary focus:ring-primary focus:ring-offset-slate-950"
                 checked={filters.customer_region?.includes(option.value) || false}
                 onChange={() => handleMultiSelectChange('customer_region', option.value)}
+              />
+              <span className="text-sm text-gray-400 group-hover:text-gray-200 flex-1">
+                {option.value}
+              </span>
+              <span className="text-xs text-gray-500">({option.count})</span>
+            </label>
+          ))}
+        </div>
+      </div>
+
+      {/* Customer Type Filter */}
+      <div className="space-y-2">
+        <h3 className="text-sm font-medium text-gray-300">Customer Type</h3>
+        <div className="space-y-2">
+          {metadata.customer_types.map((option) => (
+            <label key={option.value} className="flex items-center space-x-2 cursor-pointer group">
+              <input
+                type="checkbox"
+                className="rounded border-gray-600 bg-white/5 text-primary focus:ring-primary focus:ring-offset-slate-950"
+                checked={filters.customer_type?.includes(option.value) || false}
+                onChange={() => handleMultiSelectChange('customer_type', option.value)}
               />
               <span className="text-sm text-gray-400 group-hover:text-gray-200 flex-1">
                 {option.value}
@@ -127,6 +152,27 @@ export const FilterPanel = ({
         </div>
       </div>
 
+      {/* Brand Filter */}
+      <div className="space-y-2">
+        <h3 className="text-sm font-medium text-gray-300">Brand</h3>
+        <div className="space-y-2 max-h-40 overflow-y-auto">
+          {metadata.brands.map((option) => (
+            <label key={option.value} className="flex items-center space-x-2 cursor-pointer group">
+              <input
+                type="checkbox"
+                className="rounded border-gray-600 bg-white/5 text-primary focus:ring-primary focus:ring-offset-slate-950"
+                checked={filters.brand?.includes(option.value) || false}
+                onChange={() => handleMultiSelectChange('brand', option.value)}
+              />
+              <span className="text-sm text-gray-400 group-hover:text-gray-200 flex-1">
+                {option.value}
+              </span>
+              <span className="text-xs text-gray-500">({option.count})</span>
+            </label>
+          ))}
+        </div>
+      </div>
+
       {/* Payment Method Filter */}
       <div className="space-y-2">
         <h3 className="text-sm font-medium text-gray-300">Payment Method</h3>
@@ -138,6 +184,48 @@ export const FilterPanel = ({
                 className="rounded border-gray-600 bg-white/5 text-primary focus:ring-primary focus:ring-offset-slate-950"
                 checked={filters.payment_method?.includes(option.value) || false}
                 onChange={() => handleMultiSelectChange('payment_method', option.value)}
+              />
+              <span className="text-sm text-gray-400 group-hover:text-gray-200 flex-1">
+                {option.value}
+              </span>
+              <span className="text-xs text-gray-500">({option.count})</span>
+            </label>
+          ))}
+        </div>
+      </div>
+
+      {/* Order Status Filter */}
+      <div className="space-y-2">
+        <h3 className="text-sm font-medium text-gray-300">Order Status</h3>
+        <div className="space-y-2">
+          {metadata.order_statuses.map((option) => (
+            <label key={option.value} className="flex items-center space-x-2 cursor-pointer group">
+              <input
+                type="checkbox"
+                className="rounded border-gray-600 bg-white/5 text-primary focus:ring-primary focus:ring-offset-slate-950"
+                checked={filters.order_status?.includes(option.value) || false}
+                onChange={() => handleMultiSelectChange('order_status', option.value)}
+              />
+              <span className="text-sm text-gray-400 group-hover:text-gray-200 flex-1">
+                {option.value}
+              </span>
+              <span className="text-xs text-gray-500">({option.count})</span>
+            </label>
+          ))}
+        </div>
+      </div>
+
+      {/* Delivery Type Filter */}
+      <div className="space-y-2">
+        <h3 className="text-sm font-medium text-gray-300">Delivery Type</h3>
+        <div className="space-y-2">
+          {metadata.delivery_types.map((option) => (
+            <label key={option.value} className="flex items-center space-x-2 cursor-pointer group">
+              <input
+                type="checkbox"
+                className="rounded border-gray-600 bg-white/5 text-primary focus:ring-primary focus:ring-offset-slate-950"
+                checked={filters.delivery_type?.includes(option.value) || false}
+                onChange={() => handleMultiSelectChange('delivery_type', option.value)}
               />
               <span className="text-sm text-gray-400 group-hover:text-gray-200 flex-1">
                 {option.value}

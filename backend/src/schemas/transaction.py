@@ -145,10 +145,14 @@ class FilterMetaResponse(BaseModel):
     """Response schema for filter metadata."""
 
     customer_regions: List[FilterOption]
+    customer_types: List[FilterOption]
     genders: List[FilterOption]
     product_categories: List[FilterOption]
+    brands: List[FilterOption]
     tags: List[FilterOption]
     payment_methods: List[FilterOption]
+    order_statuses: List[FilterOption]
+    delivery_types: List[FilterOption]
     age_range: dict = Field(default={"min": 0, "max": 100})
     date_range: dict = Field(default={"min": None, "max": None})
 
